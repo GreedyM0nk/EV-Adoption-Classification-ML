@@ -1,0 +1,48 @@
+{
+  "target": "Will_Buy_EV",
+  "positive_label": "Yes",
+  "negative_label": "No",
+  "feature_columns": [
+    "Age",
+    "Gender",
+    "Annual_Income_USD",
+    "City_Type",
+    "Daily_Commute_km",
+    "Number_of_Cars_Owned",
+    "Current_Car_Type",
+    "Charging_Stations_Near_Home",
+    "Charging_Stations_Near_Work",
+    "Home_Charging_Possible",
+    "Environmental_Concern_Level",
+    "Subsidy_Available",
+    "Range_Anxiety_Level"
+  ],
+  "numeric_columns": [
+    "Age",
+    "Annual_Income_USD",
+    "Daily_Commute_km",
+    "Number_of_Cars_Owned",
+    "Charging_Stations_Near_Home",
+    "Charging_Stations_Near_Work",
+    "Environmental_Concern_Level"
+  ],
+  "categorical_columns": [
+    "Gender",
+    "City_Type",
+    "Current_Car_Type",
+    "Home_Charging_Possible",
+    "Subsidy_Available",
+    "Range_Anxiety_Level"
+  ],
+  "dropped_columns": [
+    "Buyer_ID"
+  ],
+  "random_state": 42,
+  "test_size": 0.2,
+  "train_rows": 8000,
+  "test_rows": 2000,
+  "target_distribution": {
+    "No": 8250,
+    "Yes": 1750
+  }
+}
