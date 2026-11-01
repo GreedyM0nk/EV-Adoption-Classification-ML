@@ -28,8 +28,7 @@ below are calculated on the untouched 20% holdout.
 
 ## c. GitHub Repository Link
 
-**Repository:** Replace this line with the public GitHub URL after publishing this
-repository.
+**Repository:** https://github.com/GreedyM0nk/EV-Adoption-Classification-ML
 
 ## d. Models used and evaluation
 
@@ -61,6 +60,7 @@ class score; SVM uses its calibrated probability output.
 app.py                         Streamlit evaluation dashboard
 train.py                       Reproducible training and evaluation script
 requirements.txt               Runtime dependencies
+.streamlit/config.toml         Streamlit theme and upload configuration
 test_data.csv                 The fixed labeled 20% holdout used by the app
 model/
   logistic_regression.joblib
@@ -72,6 +72,13 @@ model/
   metrics.json
 EV_Adoption_and_Range_Anxiety_Dataset.csv
 ```
+
+The dashboard offers the bundled holdout as the default evaluation source and also
+supports uploading another labeled CSV. Uploaded data must contain the 13 feature
+columns listed in `model/metadata.json` plus `Will_Buy_EV`, with target values `Yes` or
+`No`. It loads the selected `.joblib` pipeline, computes all six required metrics, shows
+the confusion matrix, classification report, and ROC curves, and provides downloadable
+predictions. No model is retrained in the app.
 
 ## Run locally
 
@@ -107,9 +114,20 @@ EV_Adoption_and_Range_Anxiety_Dataset.csv
   `app.py` as the entry point.
 - Verify that the public URL opens without authentication and that a test CSV can be
   uploaded successfully.
-- Replace the repository placeholder above with the actual clickable GitHub URL.
+- **Live Streamlit app:** `[Add the deployed Streamlit Community Cloud URL here]`
 - Include the public Streamlit URL, the BITS Virtual Lab execution screenshot, and this
   README content in the final submission PDF in the assignment's required order.
+
+## Assignment compliance
+
+- Dataset: 10,000 instances and 13 model input features, exceeding the assignment
+  minimums of 500 instances and 12 features.
+- Models: Logistic Regression, Decision Tree, KNN, Gaussian Naive Bayes, and SVM.
+- Metrics: Accuracy, ROC AUC, Precision, Recall, F1 Score, and MCC for every model.
+- App requirements: CSV test-data upload, model-selection dropdown, metric display,
+  confusion matrix/classification report, saved-model loading, and no retraining.
+- Submission-only items still required outside this repository: the deployed Streamlit
+  URL and one BITS Virtual Lab execution screenshot.
 
 ## Academic integrity and reproducibility
 

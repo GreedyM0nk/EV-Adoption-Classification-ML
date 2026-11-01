@@ -27,6 +27,8 @@ from sklearn.metrics import (
 ROOT = Path(__file__).parent
 MODEL_DIR = ROOT / "model"
 SAMPLE_PATH = ROOT / "test_data.csv"
+BUILT_IN_SOURCE = "Built-in test data"
+UPLOAD_SOURCE = "Upload your own CSV"
 
 METRIC_KEYS = ["accuracy", "auc", "precision", "recall", "f1", "mcc"]
 METRIC_LABELS = {
@@ -71,7 +73,7 @@ CSS = """
 html, body, [class*="css"], .stApp, button, input, textarea, select {
     font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
 }
-.stApp { background: #F5F7FB; }
+.stApp { background: #F5F7FB; color: #0B1220; }
 .block-container { padding-top: 1.6rem; padding-bottom: 3rem; max-width: 1280px; }
 header[data-testid="stHeader"] { background: transparent; }
 section[data-testid="stSidebar"] {
@@ -81,13 +83,37 @@ section[data-testid="stSidebar"] * { color: #E2E8F0; }
 .hero { background: linear-gradient(135deg, #0B1220, #12363A); color: white;
     border-radius: 22px; padding: 2rem 2.2rem; margin-bottom: 1.4rem; }
 .hero h1 { margin: 0 0 .45rem; font-size: 2.2rem; }
+.hero h1 .grad {
+    background: linear-gradient(90deg, #5EEAD4, #A5B4FC);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+}
 .hero p { color: #C8D6DF; margin: 0; max-width: 760px; }
 .model-card { background: white; border: 1px solid #E5EAF0; border-radius: 16px;
-    padding: 1rem 1.1rem; height: 100%; }
+    padding: 1rem 1.1rem; min-height: 230px; display: flex; flex-direction: column; }
+.model-card.active { border: 2px solid #14B8A6; background: #E6FFFB; }
 .model-card h3 { margin: 0 0 .4rem; color: #0B1220; font-size: 1rem; }
 .model-card p { color: #5B6577; font-size: .82rem; line-height: 1.45; }
+.model-card .auc { margin-top: auto; padding-top: .6rem; border-top: 1px solid #E5EAF0;
+    color: #5B6577; font-size: .8rem; }
+.model-card .auc b { color: #0F766E; font-size: .95rem; }
+.badge { display: inline-block; font-size: .66rem; font-weight: 800; letter-spacing: .08em;
+    text-transform: uppercase; color: #0F766E; background: #CCFBF1;
+    padding: 2px 8px; border-radius: 999px; margin-bottom: .5rem; }
+.source-card { background: rgba(20, 184, 166, 0.1); border: 1px solid rgba(94, 234, 212, 0.45);
+    border-radius: 14px; padding: 12px 14px; margin: 4px 0 14px;
+    color: #94A3B8; font-size: .84rem; line-height: 1.5; }
+.source-card b { color: #FFFFFF; }
 .eyebrow { color: #14B8A6; font-size: .75rem; font-weight: 800; letter-spacing: .12em;
     text-transform: uppercase; margin-bottom: .35rem; }
+div[data-testid="stMetric"] { background: white; border: 1px solid #E5EAF0;
+    border-radius: 16px; padding: 14px 16px; border-top: 3px solid #14B8A6; }
+div[data-testid="stMetricLabel"] p { color: #5B6577 !important; font-size: .74rem !important;
+    font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+div[data-testid="stMetricValue"], div[data-testid="stMetricValue"] > div {
+    font-family: 'JetBrains Mono', monospace; color: #0B1220; font-size: 1.45rem !important; }
+div[data-testid="stPlotlyChart"], div[data-testid="stDataFrame"] {
+    background: white; border: 1px solid #E5EAF0; border-radius: 16px; padding: 8px; }
 </style>
 """
 
@@ -158,6 +184,21 @@ def validate_upload(
     return data[metadata["feature_columns"]].copy(), target.astype(int)
 
 
+def style_figure(figure: go.Figure, title: str, height: int) -> go.Figure:
+    figure.update_layout(
+        title=dict(text=title, x=0.02, font=dict(size=15, color=INK)),
+        height=height,
+        template="plotly_white",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Plus Jakarta Sans, Inter, sans-serif", color=INK, size=13),
+        hoverlabel=dict(bgcolor=INK, font_color="#F8FAFC"),
+    )
+    figure.update_xaxes(gridcolor="#EEF2F7", zerolinecolor="#E2E8F0", color=MUTED)
+    figure.update_yaxes(gridcolor="#EEF2F7", zerolinecolor="#E2E8F0", color=MUTED)
+    return figure
+
+
 def plot_confusion_matrix(matrix: list[list[int]], model_name: str) -> go.Figure:
     figure = go.Figure(
         go.Heatmap(
@@ -165,9 +206,13 @@ def plot_confusion_matrix(matrix: list[list[int]], model_name: str) -> go.Figure
             x=["Predicted No", "Predicted Yes"],
             y=["Actual No", "Actual Yes"],
             text=matrix,
-            texttemplate="%{text}",
+            texttemplate="<b>%{text}</b>",
+            textfont=dict(size=20),
             colorscale=[[0, "#E6FFFB"], [1, ACCENT]],
             showscale=False,
+            xgap=6,
+            ygap=6,
+            hovertemplate="%{y} · %{x}<br>Count: %{z}<extra></extra>",
         )
     )
     figure.update_layout(
@@ -176,7 +221,9 @@ def plot_confusion_matrix(matrix: list[list[int]], model_name: str) -> go.Figure
         margin=dict(l=20, r=20, t=55, b=20),
         font=dict(color=INK),
     )
-    return figure
+    figure.update_yaxes(autorange="reversed", showgrid=False)
+    figure.update_xaxes(showgrid=False)
+    return style_figure(figure, f"{model_name} confusion matrix", 380)
 
 
 def plot_roc_curves(
@@ -195,7 +242,7 @@ def plot_roc_curves(
                     color=SERIES_COLORS[index],
                     width=3 if selected else 1.5,
                 ),
-                opacity=1 if selected else 0.65,
+                opacity=1 if selected else 0.45,
             )
         )
     figure.add_trace(
@@ -205,14 +252,13 @@ def plot_roc_curves(
         )
     )
     figure.update_layout(
-        title="ROC curves",
         xaxis_title="False positive rate",
         yaxis_title="True positive rate",
         height=400,
         margin=dict(l=20, r=20, t=55, b=20),
         legend=dict(orientation="h", y=-0.2),
     )
-    return figure
+    return style_figure(figure, "ROC curves", 420)
 
 
 def render_metric_cards(metrics: dict[str, float]) -> None:
@@ -232,7 +278,7 @@ def main() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
     st.markdown(
         '<div class="hero"><div class="eyebrow">Saved-model evaluation lab</div>'
-        "<h1>⚡ EV adoption, made measurable.</h1>"
+        "<h1>⚡ EV adoption, made <span class='grad'>measurable.</span></h1>"
         "<p>Compare five pre-trained classifiers on labeled buyer data. "
         "Models are loaded from disk and never retrained in this dashboard.</p></div>",
         unsafe_allow_html=True,
@@ -252,11 +298,36 @@ def main() -> None:
             list(MODEL_NAMES),
             format_func=lambda key: MODEL_NAMES[key],
         )
-        upload = st.file_uploader(
-            "Upload labeled test CSV",
-            type=["csv"],
-            help="The file must include all input features and Will_Buy_EV.",
+        source_options = (
+            [BUILT_IN_SOURCE, UPLOAD_SOURCE]
+            if SAMPLE_PATH.exists()
+            else [UPLOAD_SOURCE]
         )
+        data_source = st.radio(
+            "Test data source",
+            source_options,
+            index=0,
+            help="Use the bundled 20% holdout split, or evaluate on your own labeled CSV.",
+        )
+        upload = None
+        if data_source == UPLOAD_SOURCE:
+            upload = st.file_uploader(
+                "Upload labeled test CSV",
+                type=["csv"],
+                help=f"The file must include all input features and {metadata['target']}.",
+            )
+            with st.expander("Required columns"):
+                st.markdown(
+                    "\n".join(f"- {column}" for column in metadata["feature_columns"])
+                    + f"\n- {metadata['target']} (target: "
+                    f"{metadata['positive_label']} / {metadata['negative_label']})"
+                )
+        else:
+            st.markdown(
+                f'<div class="source-card"><b>{SAMPLE_PATH.name}</b><br>'
+                f"{metadata['test_rows']:,} labeled rows · loaded automatically</div>",
+                unsafe_allow_html=True,
+            )
         if SAMPLE_PATH.exists():
             st.download_button(
                 "Download sample test data",
@@ -274,42 +345,55 @@ def main() -> None:
     for column, key in zip(model_columns, MODEL_NAMES):
         baseline = saved_metrics.get(key, {}).get("metrics", {})
         with column:
+            active = key == model_key
+            badge = '<span class="badge">Selected</span>' if active else ""
             st.markdown(
-                f'<div class="model-card"><h3>{html.escape(MODEL_NAMES[key])}</h3>'
+                f'<div class="model-card{" active" if active else ""}>{badge}'
+                f"<h3>{html.escape(MODEL_NAMES[key])}</h3>"
                 f"<p>{html.escape(MODEL_BLURBS[key])}</p>"
-                f'<p><b>Holdout AUC:</b> {baseline.get("auc", 0):.3f}</p></div>',
+                f'<div class="auc">Holdout AUC <b>{baseline.get("auc", 0):.3f}</b></div></div>',
                 unsafe_allow_html=True,
             )
 
-    if upload is None:
-        st.info("Upload `test_data.csv` in the sidebar to begin evaluation.")
-        return
+    if data_source == UPLOAD_SOURCE:
+        if upload is None:
+            st.info(
+                "Upload a labeled CSV in the sidebar, or switch the data source back "
+                "to the built-in test data."
+            )
+            return
+        csv_bytes = upload.getvalue()
+        source_name = upload.name
+    else:
+        csv_bytes = SAMPLE_PATH.read_bytes()
+        source_name = f"{SAMPLE_PATH.name} (built-in)"
 
     try:
-        uploaded_data = pd.read_csv(io.BytesIO(upload.getvalue()))
+        uploaded_data = pd.read_csv(io.BytesIO(csv_bytes))
         features, target = validate_upload(uploaded_data, metadata)
         model = load_model(model_key)
         metrics, matrix, report, predictions, scores = calculate_metrics(
             model, features, target
         )
-    except (ValueError, KeyError, OSError, TypeError) as error:
+    except (ValueError, KeyError, OSError, TypeError, pd.errors.ParserError) as error:
         st.error(f"Evaluation could not be completed: {error}")
         return
 
     st.markdown(f"### {MODEL_NAMES[model_key]} results")
+    st.caption(f"Evaluated on {source_name} · {len(uploaded_data):,} rows")
     render_metric_cards(metrics)
 
     left, right = st.columns(2)
     with left:
         st.plotly_chart(
             plot_confusion_matrix(matrix, MODEL_NAMES[model_key]),
-            use_container_width=True,
+            width="stretch",
         )
     with right:
         st.markdown("#### Classification report")
         st.dataframe(
             pd.DataFrame(report).transpose().round(4),
-            use_container_width=True,
+            width="stretch",
         )
 
     curves: dict[str, tuple[Any, Any]] = {}
@@ -323,7 +407,7 @@ def main() -> None:
             continue
     if curves:
         st.plotly_chart(
-            plot_roc_curves(curves, model_key), use_container_width=True
+            plot_roc_curves(curves, model_key), width="stretch"
         )
 
     result = uploaded_data.copy()
