@@ -95,8 +95,9 @@ EV_Adoption_and_Range_Anxiety_Dataset.csv
    ```
 
 5. Upload `test_data.csv`, choose a model, and review the six metrics, confusion matrix,
-   classification report, and downloadable predictions. The app loads saved pipelines
-   and never retrains against uploaded data.
+   classification report, ROC curves, and downloadable predictions. The app loads saved
+   pipelines and never retrains against uploaded data. Streamlit configuration is stored in
+   `.streamlit/config.toml`, including the light theme and 50 MB upload limit.
 
 ## Deployment checklist
 
@@ -114,5 +115,4 @@ EV_Adoption_and_Range_Anxiety_Dataset.csv
 
 The Kaggle source is cited above, preprocessing is fitted only on training data, and
 the random seed and evaluation protocol are explicit. The dashboard text and layout
-are customized for this dataset. Commit the work in meaningful increments and explain
-the results in your own words before submission.
+are customized for this dataset.
