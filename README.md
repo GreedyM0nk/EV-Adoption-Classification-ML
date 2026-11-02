@@ -30,6 +30,8 @@ below are calculated on the untouched 20% holdout.
 
 **Repository:** https://github.com/GreedyM0nk/EV-Adoption-Classification-ML
 
+**Live Streamlit app:** https://ev-adoption-classification-ml-pzsbhxppzjpocyqxrnzpbx.streamlit.app/
+
 ## d. Models used and evaluation
 
 All models use the same feature set and train/test split. AUC uses the positive `Yes`
@@ -105,29 +107,6 @@ predictions. No model is retrained in the app.
    classification report, ROC curves, and downloadable predictions. The app loads saved
    pipelines and never retrains against uploaded data. Streamlit configuration is stored in
    `.streamlit/config.toml`, including the light theme and 50 MB upload limit.
-
-## Deployment checklist
-
-- Push `app.py`, `train.py`, `requirements.txt`, `README.md`, `test_data.csv`, and the
-  complete `model/` directory to a public GitHub repository.
-- In Streamlit Community Cloud, select the repository, the deployment branch, and
-  `app.py` as the entry point.
-- Verify that the public URL opens without authentication and that a test CSV can be
-  uploaded successfully.
-- **Live Streamlit app:** `[Add the deployed Streamlit Community Cloud URL here]`
-- Include the public Streamlit URL, the BITS Virtual Lab execution screenshot, and this
-  README content in the final submission PDF in the assignment's required order.
-
-## Assignment compliance
-
-- Dataset: 10,000 instances and 13 model input features, exceeding the assignment
-  minimums of 500 instances and 12 features.
-- Models: Logistic Regression, Decision Tree, KNN, Gaussian Naive Bayes, and SVM.
-- Metrics: Accuracy, ROC AUC, Precision, Recall, F1 Score, and MCC for every model.
-- App requirements: CSV test-data upload, model-selection dropdown, metric display,
-  confusion matrix/classification report, saved-model loading, and no retraining.
-- Submission-only items still required outside this repository: the deployed Streamlit
-  URL and one BITS Virtual Lab execution screenshot.
 
 ## Academic integrity and reproducibility
 
