@@ -348,7 +348,7 @@ def main() -> None:
             active = key == model_key
             badge = '<span class="badge">Selected</span>' if active else ""
             st.markdown(
-                f'<div class="model-card{" active" if active else ""}>{badge}'
+                f'<div class="model-card{" active" if active else ""}">{badge}'
                 f"<h3>{html.escape(MODEL_NAMES[key])}</h3>"
                 f"<p>{html.escape(MODEL_BLURBS[key])}</p>"
                 f'<div class="auc">Holdout AUC <b>{baseline.get("auc", 0):.3f}</b></div></div>',
